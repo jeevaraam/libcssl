@@ -32,25 +32,25 @@ PKGCONFIGPATH = $(PREFIX)/lib/pkgconfig
 all: libcssl.la test libcssl.pc
 
 cssl.lo: cssl.c Makefile
-	libtool gcc -Wall -D_GNU_SOURCE -g -O -c cssl.c
+	libtool --mode=compile gcc -Wall -D_GNU_SOURCE -g -O -c cssl.c
 
 libcssl.la: cssl.lo
-	libtool gcc -g -O -o libcssl.la -rpath $(LIBPATH)\
-	-version-info $(VERSION):$(REVISION):$(AGE)\
+	libtool --mode=link gcc -g -O -o libcssl.la -rpath $(LIBPATH)\
+	-version-info $(VERSION):$(REVISION):$(AGE) \
 	cssl.lo
 
 test.o:	test.c
-	libtool gcc -Wall -D_GNU_SOURCE -g -O -c test.c
+	libtool --mode=compile gcc -Wall -D_GNU_SOURCE -g -O -c test.c
 
 test:	test.o libcssl.la
-	libtool gcc -g -O -o test test.o libcssl.la
+	libtool --mode=link gcc -g -O -o test test.o libcssl.la
 
 test.shared: test.c
 	gcc -g -O -o test.shared test.c -lcssl
 
 install: libcssl.la cssl.h libcssl.pc
 	install -d $(LIBPATH) $(INCLUDEPATH) $(PKGCONFIGPATH)
-	libtool install -c libcssl.la $(LIBPATH) 
+	libtool --mode=install install -c libcssl.la $(LIBPATH) 
 	install -c cssl.h $(INCLUDEPATH)
 	install -c libcssl.pc $(PKGCONFIGPATH)
 
