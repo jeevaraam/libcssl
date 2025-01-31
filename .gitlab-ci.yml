@@ -67,7 +67,7 @@ deploy-job:      # This job runs in the deploy stage.
     - echo "Deploying application..."
 
   after_script:
-    - tar -xvz CSSL.tar.xz libcssl.la libcssl.pc cssl.h
+    - tar cvfj CSSL.tar.tbz libcssl.la libcssl.pc cssl.h
 
   release:
     tag_name: '$VERSION'
