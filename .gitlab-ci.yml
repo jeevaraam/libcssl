@@ -54,8 +54,9 @@ deploy-job:      # This job runs in the deploy stage.
 
   script:
     - echo "Deploying application..."
+    - export VERSION=`cat VERSION`
   
   release:
-    tag_name: 'v1.$CI_PIPELINE_IID'
-    description: 'v1.$CI_PIPELINE_IID'
+    tag_name: '$VERSION'
+    description: '$VERSION'
     ref: '$CI_COMMIT_SHA'
