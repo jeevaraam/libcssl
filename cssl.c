@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 
 #include "cssl.h"
 
@@ -377,6 +378,17 @@ void cssl_setup(cssl_t *serial,
     serial->tio.c_cc[VMIN]=1;
     serial->tio.c_cc[VTIME]=0;
 
+    serial->tio.c_lflag &= ~ICANON;
+    serial->tio.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);
+
+    serial->tio.c_lflag &= ~ECHO; // Disable echo
+    serial->tio.c_lflag &= ~ECHOE; // Disable erasure
+    serial->tio.c_lflag &= ~ECHONL; // Disable new-line echo
+    serial->tio.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
+
+    serial->tio.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
+    serial->tio.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
+
     /* we flush the port */
     tcflush(serial->fd,TCOFLUSH);
     tcflush(serial->fd,TCIFLUSH);
@@ -555,7 +567,9 @@ void cssl_handler(int signo, siginfo_t *info, void *ignored)
 	    if (cur->fd==info->si_fd) {
 
 		/* Got it */
-		n=read(cur->fd,cur->buffer,255);
+        ioctl(cur->fd, FIONREAD, &n);
+        //printf("IOCTL Bytes Avail:%d\n", n);
+		read(cur->fd,cur->buffer,255);
 
 		/* Execute callback */
 		if ((n>0)&&(cur->callback))

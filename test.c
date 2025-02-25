@@ -18,6 +18,7 @@ static void callback(int id,
 		     uint8_t *buf,
 		     int length)
 {
+    printf("Callback\n");
     int i;
 
     for(i=0;i<length;i++) {
@@ -46,15 +47,18 @@ int main()
 
     cssl_start();
     
-    serial=cssl_open("/dev/ttyS0",callback,0,
-		     19200,8,0,1);
+    serial=cssl_open("/dev/ttyACM0",callback,0,
+		     115200,8,0,1);
 
     if (!serial) {
 	printf("%s\n",cssl_geterrormsg());
 	return -1;
     }
 
-    cssl_putstring(serial,"Type some data, ^D finishes.");
+    uint8_t data[4] = {'F', '0', '0', 'B'};
+
+    cssl_putdata(serial, &data[0], 4);
+    //cssl_putstring(serial, );
 
     while (!finished)
 	pause();
