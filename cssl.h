@@ -47,7 +47,7 @@ const char *cssl_geterrormsg();
 int cssl_geterror();
 
 /* start the cssl */
-void cssl_start();
+void cssl_start(int enLog);
 
 /* finish all jobs, clear memory, etc. */
 void cssl_stop();

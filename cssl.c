@@ -46,6 +46,12 @@ static const char *cssl_errors[]= {
 /* status of last cssl function */ 
 static cssl_error_t cssl_error=CSSL_OK;
 
+/* Logging Enable */
+static int enLogging = 0;
+
+/* Log File Handler */
+FILE* logFd;
+
 /* prototype of signal handler */
 static void cssl_handler(int signo, siginfo_t *info, void *ignored);
 
@@ -76,9 +82,17 @@ int cssl_geterror()
  */
 
 /* starts cssl */
-void cssl_start()
+void cssl_start(int enLog)
 {
     int sig;
+
+    if(enLog>0)
+    {
+        if((logFd = fopen("serialRawLog.log", "w"))>0)
+        {
+            enLogging = 1;
+        }
+    }
 
     if (cssl_started) {
 	return;
@@ -127,6 +141,13 @@ void cssl_stop()
     /* if not started we do nothing */
     if (!cssl_started)
 	return;
+
+    /* Close the Log File */
+    if(enLogging)
+    {
+        fflush(logFd);
+        fclose(logFd);
+    }
 
     /* we close all ports, and free the list */
     while (head)
@@ -474,6 +495,11 @@ void cssl_putchar(cssl_t *serial,
 	return;
     }    
 
+    if(enLogging == 1)
+    {
+        fprintf(logFd, "=> %X\n", c);
+    }
+
     write(serial->fd,&c,1);
 }
 
@@ -489,7 +515,19 @@ void cssl_putstring(cssl_t *serial,
     if (!serial) {
 	cssl_error=CSSL_ERROR_NULLPOINTER;
 	return;
-    }    
+    }
+    
+    if(enLogging == 1)
+    {
+        fprintf(logFd, "=>");
+        for(int i = 0; i<strlen(str); i++)
+        {
+            fprintf(logFd, "%X ", str[i]);
+        }
+
+        fprintf(logFd, "\n\n");
+    }
+
     write(serial->fd,str,strlen(str));
 }
 
@@ -508,6 +546,17 @@ void cssl_putdata(cssl_t *serial,
 	cssl_error=CSSL_ERROR_NULLPOINTER;
 	return;
     }    
+
+    if(enLogging == 1)
+    {
+        fprintf(logFd, "=>");
+        for(int i = 0; i<datalen; i++)
+        {
+            fprintf(logFd, "%X ", data[i]);
+        }
+
+        fprintf(logFd, "\n\n");
+    }
 
     write(serial->fd,data,datalen);
 }
@@ -537,6 +586,11 @@ int cssl_getchar(cssl_t *serial)
     if (result<=0)
 	return -1;
     
+    if(enLogging == 1)
+    {
+        fprintf(logFd, "<= %X\n\n", c);
+    }
+    
     return c;
 }
 
@@ -545,7 +599,20 @@ int cssl_getdata(cssl_t *serial,
 		 uint8_t *buffer,
 		 int size)
 {
-    return read(serial->fd,buffer,size);
+    int result = read(serial->fd,buffer,size);
+
+    if(enLogging == 1)
+    {
+        fprintf(logFd, "<=");
+        for(int i = 0; i<result; i++)
+        {
+            fprintf(logFd, "%X ", buffer[i]);
+        }
+
+        fprintf(logFd, "\n\n");
+    }
+
+    return result; 
 }
 
 /*------------------------------------------*/
@@ -570,6 +637,17 @@ void cssl_handler(int signo, siginfo_t *info, void *ignored)
         ioctl(cur->fd, FIONREAD, &n);
         //printf("IOCTL Bytes Avail:%d\n", n);
 		read(cur->fd,cur->buffer,255);
+
+        if(enLogging == 1)
+        {
+            fprintf(logFd, "<=");
+            for(int i = 0; i<n; i++)
+            {
+                fprintf(logFd, "%X ", cur->buffer[i]);
+            }
+
+            fprintf(logFd, "\n\n");
+        }
 
 		/* Execute callback */
 		if ((n>0)&&(cur->callback))
