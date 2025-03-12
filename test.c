@@ -8,6 +8,7 @@
 
 #include "cssl.h"
 
+#define LOGGING 0
 
 /* if it is time to finish */
 static int finished=0;
@@ -45,7 +46,7 @@ int main()
 {
     cssl_t *serial;
 
-    cssl_start();
+    cssl_start(LOGGING);
     
     serial=cssl_open("/dev/ttyACM0",callback,0,
 		     115200,8,0,1);
