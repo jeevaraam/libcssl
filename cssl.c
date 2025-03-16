@@ -497,7 +497,7 @@ void cssl_putchar(cssl_t *serial,
 
     if(enLogging == 1)
     {
-        fprintf(logFd, "=> %X\n", c);
+        fprintf(logFd, "=> %02X\n", c);
     }
 
     write(serial->fd,&c,1);
@@ -519,10 +519,10 @@ void cssl_putstring(cssl_t *serial,
     
     if(enLogging == 1)
     {
-        fprintf(logFd, "=>");
+        fprintf(logFd, "=> ");
         for(int i = 0; i<strlen(str); i++)
         {
-            fprintf(logFd, "%X ", str[i]);
+            fprintf(logFd, "%02X ", str[i]);
         }
 
         fprintf(logFd, "\n\n");
@@ -549,10 +549,10 @@ void cssl_putdata(cssl_t *serial,
 
     if(enLogging == 1)
     {
-        fprintf(logFd, "=>");
+        fprintf(logFd, "=> ");
         for(int i = 0; i<datalen; i++)
         {
-            fprintf(logFd, "%X ", data[i]);
+            fprintf(logFd, "%02X ", data[i]);
         }
 
         fprintf(logFd, "\n\n");
@@ -588,7 +588,7 @@ int cssl_getchar(cssl_t *serial)
     
     if(enLogging == 1)
     {
-        fprintf(logFd, "<= %X\n\n", c);
+        fprintf(logFd, "<= %02X\n\n", c);
     }
     
     return c;
@@ -603,10 +603,10 @@ int cssl_getdata(cssl_t *serial,
 
     if(enLogging == 1)
     {
-        fprintf(logFd, "<=");
+        fprintf(logFd, "<= ");
         for(int i = 0; i<result; i++)
         {
-            fprintf(logFd, "%X ", buffer[i]);
+            fprintf(logFd, "%02X ", buffer[i]);
         }
 
         fprintf(logFd, "\n\n");
@@ -640,10 +640,10 @@ void cssl_handler(int signo, siginfo_t *info, void *ignored)
 
         if(enLogging == 1)
         {
-            fprintf(logFd, "<=");
+            fprintf(logFd, "<= ");
             for(int i = 0; i<n; i++)
             {
-                fprintf(logFd, "%X ", cur->buffer[i]);
+                fprintf(logFd, "%02X ", cur->buffer[i]);
             }
 
             fprintf(logFd, "\n\n");
